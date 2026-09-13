@@ -38,7 +38,7 @@ const conjugationQuestions = conjugationVerbs.flatMap(verb => conjugationPeople.
   const sentence = conjugationSentence(verb, person);
   const form = verb.forms[person.form];
   const answer = form.charAt(0).toLocaleUpperCase('es') + form.slice(1);
-  return { prompt: sentence.english, answer };
+  return { prompt: sentence.english, answer, infinitive: verb.verb };
 }));
 let quizType = 'quiz';
 let questionBank = vocabulary;
@@ -79,6 +79,18 @@ function shuffled(items) {
   return result;
 }
 
+function quizDistractors(question, bank) {
+  // Exclude alternate valid translations of the same English sentence.
+  const candidates = Array.from(new Map(
+    shuffled(bank.filter(word => word.prompt !== question.prompt && word.answer !== question.answer))
+      .map(word => [word.answer, word])
+  ).values());
+  const sameInfinitive = question.infinitive && candidates.find(word => word.infinitive === question.infinitive);
+  return sameInfinitive
+    ? [sameInfinitive, ...candidates.filter(word => word !== sameInfinitive).slice(0, 2)]
+    : candidates.slice(0, 3);
+}
+
 function showQuestion() {
   cancelAdvance();
   answered = false;
@@ -90,11 +102,7 @@ function showQuestion() {
   const question = questions[questionIndex];
   quizWord.lang = quizType === 'quiz' ? 'es' : 'en';
   quizWord.textContent = question.prompt.charAt(0).toLocaleUpperCase(quizWord.lang) + question.prompt.slice(1);
-  // Exclude alternate valid translations of the same English sentence.
-  const distractors = Array.from(new Map(
-    shuffled(questionBank.filter(word => word.prompt !== question.prompt && word.answer !== question.answer))
-      .map(word => [word.answer, word])
-  ).values()).slice(0, 3);
+  const distractors = quizDistractors(question, questionBank);
   answers.replaceChildren();
   shuffled([question, ...distractors]).forEach(choice => {
     const button = document.createElement('button');
