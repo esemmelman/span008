@@ -48,7 +48,7 @@ const conjugationQuestions = conjugationVerbs.flatMap(verb => conjugationPeople.
   const answer = form.charAt(0).toLocaleUpperCase('es') + form.slice(1);
   const subject = person.spanish === 'Usted' ? 'you, formal' : person.english === 'I' ? 'I' : person.english.toLowerCase();
   const explanation = `${conjugationReasons[verb.verb]} With ${person.spanish.toLocaleLowerCase('es')} (${subject}), use ${form}.`;
-  return { prompt: sentence.english, answer, infinitive: verb.verb, explanation };
+  return { prompt: sentence.english, answer, infinitive: verb.verb, personForm: person.form, explanation };
 }));
 let quizType = 'quiz';
 let questionBank = vocabulary;
@@ -96,9 +96,18 @@ function quizDistractors(question, bank) {
       .map(word => [word.answer, word])
   ).values());
   const sameInfinitive = question.infinitive && candidates.find(word => word.infinitive === question.infinitive);
-  return sameInfinitive
-    ? [sameInfinitive, ...candidates.filter(word => word !== sameInfinitive).slice(0, 2)]
-    : candidates.slice(0, 3);
+  const required = sameInfinitive ? [sameInfinitive] : [];
+  const contrastingVerb = { Ser: 'Estar', Estar: 'Ser' }[question.infinitive];
+  if (contrastingVerb) {
+    // Use the full set because the quiz bank picks just one variant of "you".
+    const matchingPerson = conjugationQuestions.find(word =>
+      word.infinitive === contrastingVerb && word.personForm === question.personForm
+    );
+    required.push(matchingPerson);
+  }
+  return [...required, ...candidates.filter(word =>
+    !required.some(choice => choice.answer === word.answer)
+  ).slice(0, 3 - required.length)];
 }
 
 function showQuestion() {
