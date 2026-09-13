@@ -36,8 +36,8 @@ const vocabulary = Array.from(document.querySelectorAll('tbody tr'), row => ({
 }));
 const conjugationQuestions = conjugationVerbs.flatMap(verb => conjugationPeople.map(person => {
   const sentence = conjugationSentence(verb, person);
-  const withoutSubject = sentence.spanish.slice(person.spanish.length + 1);
-  const answer = withoutSubject.charAt(0).toLocaleUpperCase('es') + withoutSubject.slice(1);
+  const form = verb.forms[person.form];
+  const answer = form.charAt(0).toLocaleUpperCase('es') + form.slice(1);
   return { prompt: sentence.english, answer };
 }));
 let quizType = 'quiz';
