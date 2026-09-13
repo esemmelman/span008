@@ -38,7 +38,9 @@ const conjugationQuestions = conjugationVerbs.flatMap(verb => conjugationPeople.
   const sentence = conjugationSentence(verb, person);
   const form = verb.forms[person.form];
   const answer = form.charAt(0).toLocaleUpperCase('es') + form.slice(1);
-  return { prompt: sentence.english, answer, infinitive: verb.verb };
+  const subject = person.spanish === 'Usted' ? 'you, formal' : person.english === 'I' ? 'I' : person.english.toLowerCase();
+  const explanation = `${answer} is the present-tense form of ${verb.verb.toLocaleLowerCase('es')} (${verb.meaning}) for ${person.spanish} (${subject}).`;
+  return { prompt: sentence.english, answer, infinitive: verb.verb, explanation };
 }));
 let quizType = 'quiz';
 let questionBank = vocabulary;
@@ -126,6 +128,9 @@ function showQuestion() {
         }
       }
       if (!correct) button.classList.add('incorrect');
+      if (!correct && quizType === 'conjugation-quiz') {
+        feedback.textContent = question.explanation;
+      }
       answerAnnouncement.textContent = `Answer: ${question.answer}${question.answer.endsWith('.') ? '' : '.'}${correct ? '' : ' Select this answer to continue.'}`;
       document.getElementById('quiz-progress').textContent = `Question ${questionIndex + 1} of ${questions.length} · Score: ${score}`;
       if (correct) advanceTimer = setTimeout(advanceQuestion, 2000);
