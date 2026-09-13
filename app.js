@@ -125,13 +125,20 @@ function showQuestion() {
         if (option.textContent === question.answer) {
           option.classList.add('correct');
           if (!correct) option.classList.add('correction');
+          if (!correct && quizType === 'conjugation-quiz') {
+            const label = document.createElement('span');
+            label.textContent = question.answer;
+            const explanation = document.createElement('span');
+            explanation.className = 'quiz-explanation';
+            explanation.lang = 'en';
+            explanation.textContent = question.explanation;
+            option.replaceChildren(label, explanation);
+          }
         }
       }
       if (!correct) button.classList.add('incorrect');
-      if (!correct && quizType === 'conjugation-quiz') {
-        feedback.textContent = question.explanation;
-      }
       answerAnnouncement.textContent = `Answer: ${question.answer}${question.answer.endsWith('.') ? '' : '.'}${correct ? '' : ' Select this answer to continue.'}`;
+      if (!correct && quizType === 'conjugation-quiz') answerAnnouncement.textContent += ` ${question.explanation}`;
       document.getElementById('quiz-progress').textContent = `Question ${questionIndex + 1} of ${questions.length} · Score: ${score}`;
       if (correct) advanceTimer = setTimeout(advanceQuestion, 2000);
     });
