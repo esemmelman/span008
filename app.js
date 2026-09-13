@@ -34,12 +34,20 @@ const vocabulary = Array.from(document.querySelectorAll('tbody tr'), row => ({
   prompt: row.querySelector('th').textContent,
   answer: row.querySelector('td').textContent,
 }));
+const conjugationReasons = {
+  Ser: 'Use ser to say where someone is from.',
+  Oír: 'Use oír for hearing something, like music.',
+  Estar: 'Use estar to say where someone is, like at home.',
+  Ir: 'Use ir for going somewhere, like to school.',
+  Tener: 'Use tener to say what someone has, like a book.',
+  Decir: 'Use decir for saying or telling something, like telling the truth.',
+};
 const conjugationQuestions = conjugationVerbs.flatMap(verb => conjugationPeople.map(person => {
   const sentence = conjugationSentence(verb, person);
   const form = verb.forms[person.form];
   const answer = form.charAt(0).toLocaleUpperCase('es') + form.slice(1);
   const subject = person.spanish === 'Usted' ? 'you, formal' : person.english === 'I' ? 'I' : person.english.toLowerCase();
-  const explanation = `${answer} is the present-tense form of ${verb.verb.toLocaleLowerCase('es')} (${verb.meaning}) for ${person.spanish} (${subject}).`;
+  const explanation = `${conjugationReasons[verb.verb]} With ${person.spanish.toLocaleLowerCase('es')} (${subject}), use ${form}.`;
   return { prompt: sentence.english, answer, infinitive: verb.verb, explanation };
 }));
 let quizType = 'quiz';
